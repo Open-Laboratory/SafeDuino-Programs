@@ -1,0 +1,25 @@
+# Программы
+AVR8 Burn-O-Mat
+AVRDUDE
+
+# Компиляция программы
+# Для ATmega168, f_cpu = 7 372 800 Гц
+make ng7
+# Для ATmega328, f_cpu = 16 000 000 Гц
+make atmega328
+
+# Прошивка bootloader на микроконтроллер
+# Для ATmega168, f_cpu = 7 372 800 Гц
+avrdude -c stk500v2 -b 115200 -p m168 -P /dev/ttyUSB0 -U flash:w:ATmegaBOOT_168_ng7.hex
+
+# Для ATmega168, f_cpu = 16 000 000 Гц
+avrdude -c stk500v2 -b 115200 -p m168 -P /dev/ttyUSB0 -U flash:w:ATmegaBOOT_168_ng.hex
+
+# Для ATmega328, f_cpu = 16 000 000 Гц
+avrdude -B100 -c stk500v2 -b 115200 -p m328p -P /dev/ttyUSB0 -e -U lfuse:w:0xFF:m -U hfuse:w:0xDA:m -U efuse:w:0x05:m
+avrdude -c stk500v2 -b 115200 -p m328p -P /dev/ttyUSB0 -U flash:w:ATmegaBOOT_168_atmega328.hex
+
+# Для установки "fuses bit" смотри скрины
+# Если вместо DA в hfuse записать DE то плату можно запрограммировать по
+USB только один раз!
+
