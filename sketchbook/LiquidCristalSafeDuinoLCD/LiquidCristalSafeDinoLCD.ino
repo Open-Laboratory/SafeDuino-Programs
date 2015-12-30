@@ -1,7 +1,7 @@
 /*
   LiquidCrystal Library - Hello World
  
- Demonstrates the use a 8x2 LCD display.
+ Demonstrates the use a 20x4 LCD display.
  
  This sketch prints "Hello World!" to the LCD
  and shows the time.
@@ -25,11 +25,11 @@
 
 // initialize the library with the numbers of the interface pins
 
-// For Arduino
+// For SafeDuino
 //LiquidCrystal lcd(13, 12, 11, 10, 8, 9);
 
 // For SafeDuino MEGA 2560
-LiquidCrystal lcd(13, 12, 11, 10, 8, 9);
+LiquidCrystal lcd(J6, J7, J2, J3, J4, J5);
 void setup() {
   
   // LCD read/write (SafeDuino only!)
@@ -47,8 +47,8 @@ void setup() {
 void loop() {
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(7, 1);
+  //lcd.setCursor(0, 1);
   // print the number of seconds since reset:
-  lcd.print(millis()/1000);
+  //lcd.print(millis()/1000);
 }
 
