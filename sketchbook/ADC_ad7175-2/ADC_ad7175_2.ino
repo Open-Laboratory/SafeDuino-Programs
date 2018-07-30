@@ -2,7 +2,7 @@
 #define adc_check_errors 9
 #define chip_select 10
 
-int bit_data = 24;
+int bit_data = 16; // 16 bit
 int ch_mux = 0; // 0 - AIN0+ AIN1-, 1 - AIN2+ AIN3-
 int continuous_mode = 0;
 
@@ -11,32 +11,35 @@ const int cmd_buffer_size = 20;
 char cmd_buffer[cmd_buffer_size + 1]; // zero plus one
 int in_buffer_pos = 0;
 
+unsigned long int time_micros_a = 0; // first time of counting
+unsigned long int time_micros_b = 0; // end time of counting
+unsigned long int time_sample = 0; // time between sample measurements
+
 void setup() {
- 
   // Serial configuration
-  Serial.begin(115200); // default
-  //Serial.begin(921600); // max speed 921600 for full program
-  //Serial.begin(4000000); // max speed 4 000 000 for easy program
+  Serial.begin(115200); // default (900 measurements per second max)
+  //Serial.begin(921600); // max speed 921600 for full program  (900 measurements per second max)
+  //Serial.begin(4000000); // max speed 4 000 000 for very easy program
   
   // SPI configuration
   SPI.begin(); // initialize SPI, covering MOSI,MISO,SCK signals
   SPI.setBitOrder(MSBFIRST);  // data is clocked in MSB first
   SPI.setDataMode(SPI_MODE3);  // SCLK idle low (CPOL=0), MOSI read on rising edge (CPHI=0)
-  //SPI.setClockDivider(SPI_CLOCK_DIV2);  // system clock = 16 MHz
+  //SPI.setClockDivider(SPI_CLOCK_DIV2);  // system clock = 16 MHz, DIV2 - 8 MHz
   pinMode(chip_select,OUTPUT); 
   pinMode(adc_check_errors,INPUT);
   
   // Set interface mod register
-  write_rigister(B01000010, B00000010, B00000000, B00000000); // 24 bit mode
-  //write_rigister(B01000010, B00000010, B00000000, B00000001); // 16 bit mode
+  write_rigister(B01000010, B00000010, B00000000, B00000001); // 16 bit mode default
+  //write_rigister(B01000010, B00000010, B00000000, B00000000); // 24 bit mode
 
   // Set setup config 0 register
-  write_rigister(B01100000, B00100000, B00010011, B00000000); // Reference 4.096 V
+  write_rigister(B01100000, B00100000, B00010011, B00000000); // Reference 4.096 V default
   //write_rigister(B01100000, B00100000, B00010011, B00100000); // Reference 2.5 V
   //write_rigister(B01100000, B00100000, B00010011, B00110000); // // Reference VCC 5 V
   
   // Set channel 0 register
-  write_rigister(B01010000, B00010000, B10000000, B00000001); // AIN0+ AIN1-
+  write_rigister(B01010000, B00010000, B10000000, B00000001); // AIN0+ AIN1- default
   //write_rigister(B01010000, B00010000, B10000000, B01000011); // AIN2+ AIN3-
 }
 
@@ -75,7 +78,7 @@ void loop() {
   if (continuous_mode == 1) {
     read_data();
     Serial.print('\n');
-    delay(100);
+    //delay(100);
   }
 }
 
@@ -117,6 +120,7 @@ void read_data()
     uint8_t byte_data_reg0 = SPI.transfer(0xff);
     uint8_t byte_data_reg1 = SPI.transfer(0xff);
     uint8_t byte_data_reg2 = SPI.transfer(0xff);
+    time_micros_b = micros(); // time count
     digitalWrite(chip_select, HIGH);
     
     usls = 65536.0*float(byte_data_reg0)+256.0*float(byte_data_reg1)+float(byte_data_reg2); // 24 bit
@@ -125,16 +129,32 @@ void read_data()
     // 16-bit data
     uint8_t byte_data_reg0 = SPI.transfer(0xff);
     uint8_t byte_data_reg1 = SPI.transfer(0xff);
-    digitalWrite(chip_select, HIGH);
+    time_micros_b = micros(); // time count
+    digitalWrite(chip_select, HIGH);    
     
     usls = 256*float(byte_data_reg0)+float(byte_data_reg1); // 16 bit
     usls = 0.0003384555*(usls-32768.0); // 16 Bit Vref - 4.096V
   }
+  
+  if (time_micros_a == 0) {
+    time_sample = 0; // first count
+    time_micros_a = time_micros_b;
+    } else {
+      if (time_micros_a > time_micros_b) {
+        time_sample = 4294967295 - time_micros_b + time_micros_a; // zero crossing
+        time_micros_a = time_micros_b;
+      } else {
+        time_sample = time_micros_b - time_micros_a;
+        time_micros_a = time_micros_b;
+      }
+    }
+  
   Serial.print(usls,5);
+  Serial.print('\t');
+  Serial.print(time_sample);
 }
 
-void analyse_command()
-{ 
+void analyse_command() { 
   // read adc
   if ((cmd_buffer[0] == 'R') && (cmd_buffer[1] == 'D')) {
     //Serial.print("RD");
