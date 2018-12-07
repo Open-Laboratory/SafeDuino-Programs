@@ -151,6 +151,10 @@ static const int symbols[] = {
       // обновить все байты
     }
     
+    char* Display16::readDisplay_data() {
+        return display_data;
+    }
+    
     void Display16::clear() {
       for (int i=0;i<data_size; ++i)
         display_data[i] = 0xFF;  

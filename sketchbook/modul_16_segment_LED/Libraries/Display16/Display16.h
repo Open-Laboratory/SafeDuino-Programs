@@ -56,6 +56,9 @@ class Display16 : public Print {
     void putDP(int index, char DP);
     
     char getDP(int index);
+    
+    char* readDisplay_data();
+    
     protected:
       char s1;
       char s2;
