@@ -1,6 +1,8 @@
-Для добавления новых ног необходимо скопировать файл pins_arduino.h
-по адресу:
+Для добавления новых ног необходимо скопировать файл pins_arduino.h по адресу:
 arduino/hardware/arduino/variants/mega/
+
+Для arduino ide 2.1 и выше:
+/home/<user>/.arduino15/packages/arduino/hardware/avr/1.8.6/variants/mega/
 
 В библиотеку добавлены следующие цифровые выводы:
 PJ2-PJ7 - используются для работы с знакосинтезирующим дисплеем
