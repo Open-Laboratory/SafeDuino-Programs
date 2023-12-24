@@ -1,11 +1,25 @@
-// Прошивка atmega2560
 
+##################################################################################
+// Прошивка atmega16u2
+##################################################################################
+sudo avrdude -p at90usb82 -F -P /dev/ttyUSB0 -c STK500v2 -U flash:w:MEGA-dfu_and_usbserial_combined.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
+
+##################################################################################
+// Прошивки atmega2560
+##################################################################################
+sudo avrdude -p m2560 -F -P /dev/ttyUSB0 -c STK500v2 -U flash:w:stk500boot_v2_mega2560.hex -U efuse:w:0xFD:m -U hfuse:w:0xD8:m -U lfuse:w:0xFF:m - U lock:w:0xFF:m
+
+
+
+##################################################################################
+// Прочее
+##################################################################################
+
+// Прошивка atmega2560 без fuse битов
 sudo avrdude -B100 -c STK500v2 -p m2560 -P /dev/ttyUSB0 -b 115200 -e -u -U efuse:w:0xFD:m -U hfuse:w:0xD8:m -U lfuse:w:0xFF:m - U lock:w:0xFF:m
 
+// Прошивка fuse битов в atmega2560
 sudo avrdude -c STK500v2 -p m2560 -P /dev/ttyUSB0 -b 115200 -V -U flash:w:stk500boot_v2_mega2560.hex
 
 //  Прошивка программы поверх bootloader (прошить можно только один раз)
 sudo avrdude -c STK500v2 -p m2560 -P /dev/ttyUSB0 -b 115200 -U lock:w:0x0F:m
-
-// Прошивка atmega16u2
-sudo avrdude -p at90usb82 -F -P /dev/ttyUSB0 -c STK500v2 -U flash:w:MEGA-dfu_and_usbserial_combined.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
